@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+	xmlns:s="library://ns.adobe.com/flex/spark"
+	xmlns:mx="library://ns.adobe.com/flex/mx"
+	applicationComplete="appCreated(event)"
+	pageTitle="Instructional Technology Tool"
+	viewSourceURL="srcview/index.html">
+
+	<!-- http://flex.exposedout.net/2011/05/save-file-as-pdf-in-flex/ -->
+	<fx:Script>
+ 
+    import flash.display.*;
+    import flash.events.*;
+    import flash.net.*;
+    import flash.text.*;
+    import flash.utils.ByteArray;
+
+    import mx.graphics.codec.JPEGEncoder;
+
+    import org.alivepdf.layout.Orientation;
+    import org.alivepdf.layout.Size;
+    import org.alivepdf.layout.Unit;
+    import org.alivepdf.pdf.PDF;
+    import org.alivepdf.saving.Method;
+
+    protected var fileRefPDF:PDF;
+
+    private function onSaveClicked(e:Event):void
+    {
+    fileRefPDF = new PDF(Orientation.PORTRAIT, Unit.MM, Size.LETTER);
+    fileRefPDF.addPage();
+
+	 fileRefPDF.writeFlashHtmlText(2,myNote.htmlText);
+	
+    var bytes:ByteArray = fileRefPDF.save(Method.LOCAL);
+    var file:FileReference = new FileReference();
+    file.save(bytes,"myNote.pdf");
+    }
+
+</fx:Script>
+	<fx:Script>
+		<![CDATA[
+		
+		
+		
+			import flash.net.navigateToURL;
+
+			import mx.events.FlexEvent;
+			import mx.utils.StringUtil;
+
+			import mx.controls.Alert;
+            import mx.events.ListEvent;
+            import mx.events.TreeEvent;
+			
+            [Bindable]
+            private var selectedNode:XML;
+ 
+            private function treeChanged(e:Event):void
+            {
+                selectedNode = Tree(e.target).selectedItem as XML;
+				topicIndex = Tree(e.target).selectedItem.data.@topicIndex - 1;
+				setVideo(videoIds[topicIndex]);
+				 
+            }
+			
+			//use click
+            private function clickHandler(e:Event):void
+            {
+                Alert.show(Tree(e.currentTarget).selectedItem.@label, "Click Event");
+            }
+ 
+            //use itemclick
+            private function itemClickHandler(e:ListEvent):void
+            {
+                //Alert.show(e.itemRenderer.data.@label, "ItemClick Event");
+				topicIndex = e.itemRenderer.data.@topicIndex - 1;
+				setVideo(videoIds[topicIndex]);
+			 
+            }
+ 
+            //use itemOpen
+            private function itemOpenHandler(e:TreeEvent):void
+            {
+                Alert.show(e.item.@label, "ItemOpen Event");
+            }
+ 
+            //use itemClose
+            protected function itemCloseHandler(e:TreeEvent):void
+            {
+                Alert.show(e.item.@label, "ItemClose Event");
+            }
+			private static const YOUTUBE_EMBED_URL:String = "http://www.youtube.com/v/{0}?version=3&autoplay={1}&fs={2}&rel={3}";
+
+			private static const YOUTUBE_EXTERNAL_URL:String = "http://www.youtube.com/watch?v=";
+
+			
+			private var videoIds:Array = ["UzxYlbK2c7E","5u4G23_OohI", "HZ4cvaztQEs", "nLKOQfKLUks", "qRJ3GKMOFrE","qyyJKd-zXRE","s8B4A5ubw6c","bUv9bfMPMb4","tojaGtMPo5U","0kWZoyNRxTY","sQ8T9b-uGVE","ZZGTuAkF-Hw","LBtuYU-HfUg","ey2PE5xi9-A","QGd06MTRMHs","RtxI449ZjSc","LKdFTsM3hl4","-ff6l5D8-j8","UFH5ibWnA7g","yCqPMD6coO8"];
+
+			
+			[Bindable]
+			private var topicIndex:Number;
+			
+			[Bindable]
+			private var videoUrl:String;
+
+			[Bindable]
+			private var youTubeUrl:String;
+
+			[Bindable]
+			private var autoPlay:Boolean = false;
+
+			[Bindable]
+			private var relatedContent:Boolean = false;
+
+			private var currentIndex:int = 0;
+
+			 
+			
+			 
+			private function appCreated(event:FlexEvent):void {
+				play(0);
+				topicIndex =1;
+			}
+			
+			public function setVideo(videoId:String) : void {
+				swfLoader.unloadAndStop();
+				videoUrl = StringUtil.substitute(YOUTUBE_EMBED_URL, videoId, b2i(autoPlay), b2i(relatedContent));
+				youTubeUrl = YOUTUBE_EXTERNAL_URL + videoId;
+			}
+			
+			private function play(dx:int):void {
+				swfLoader.unloadAndStop();
+				currentIndex = (currentIndex + dx) % videoIds.length;
+				var videoId:String = videoIds[currentIndex];
+				videoUrl = StringUtil.substitute(YOUTUBE_EMBED_URL, videoId, b2i(autoPlay), b2i(relatedContent));
+				youTubeUrl = YOUTUBE_EXTERNAL_URL + videoId;
+			}
+
+			private function b2i(b:Boolean):int {
+				return (b ? 1 : 0);
+			}
+		]]>
+		
+	</fx:Script>
+	
+<mx:HDividedBox width="100%" height="100%">
+      <s:BorderContainer width="40%" height="100%" id="mainContainer" 
+      styleName="container">
+	
+      <s:VGroup width="100%" height="100%" gap="0" 
+         horizontalAlign="center" verticalAlign="middle">
+         
+            <s:Panel id="tabNavigatorPanel" title="Course Resources" 
+               width="100%" height="100%" >
+               <s:layout>
+                  <s:HorizontalLayout  gap="0" verticalAlign="middle" 
+                     horizontalAlign="center"/>	
+               </s:layout>	
+			     
+               <mx:TabNavigator id="tabNavigator" width="100%" height="100%">
+                   
+                  <s:NavigatorContent label="Related Material" width="100%" 
+                     height="100%">
+                     <s:VGroup verticalAlign="top" horizontalAlign="center"
+                        width="100%" height="100%">
+						
+                        <mx:Text width="100%" fontSize="11">
+						<mx:htmlText>
+						<![CDATA[
+						Books
+						<ul>
+						<li>Kevin Murphy, <a href="http://www.cs.ubc.ca/~murphyk/MLbook/" target="new"><font color="#FF0000" size="10">Machine Learning: A Probabilistic Perspective</font></a>, MIT Press.</li>
+						<li>Christopher M. Bishop, <a href="http://research.microsoft.com/en-us/um/people/cmbishop/prml/" target="new"><font color="#FF0000" size="10">Pattern Recognition and Machine Learning</font></a>, Springer.</li>
+						<li>[Free Download]David J.C. MacKay, <a href="http://www.inference.phy.cam.ac.uk/itprnn/book.html" target="new"><font color="#FF0000" size="10">Information Theory, Inference, and Learning Algorithms</font></a>, Cambridge University Press.</li>
+						<li>[Free Download]Trevor Hastie, Robert Tibshirani, and Jerome Friedman, <a href="http://www-stat.stanford.edu/~tibs/ElemStatLearn/" target="new"><font color="#FF0000" size="10">The Elements of Statistical Learning</font></a>, Springer.  </li>
+						<li>[Free Download]David Barber, <a href="http://www.cs.ucl.ac.uk/staff/d.barber/brml/" target="new"><font color="#FF0000" size="10">Bayesian Reasoning and Machine Learning</font></a>, Cambridge University Press.  </li>
+						</ul>
+     
+						]]>
+				</mx:htmlText>
+				</mx:Text>	
+                     </s:VGroup>							
+                  </s:NavigatorContent>
+                  <s:NavigatorContent label="Take Notes" width="100%" 
+                     height="100%">
+                     <s:VGroup verticalAlign="top" horizontalAlign="center"
+                        width="100%" height="100%">
+						
+                        <mx:TextArea id="myNote" width="90%" fontSize="12" height="90%">
+						
+				 
+						</mx:TextArea>	
+						 <s:Label top="33" left="14" text="Save your Notes! "  fontWeight="bold" fontSize="15"/>    
+						 <s:Button click="onSaveClicked(event)" label="Save to PDF" id="saveBtn" x="14" y="148"/>
+    
+                     </s:VGroup>							
+                  </s:NavigatorContent>
+                  
+               </mx:TabNavigator>
+            </s:Panel>
+      </s:VGroup>	 
+   </s:BorderContainer>	
+				
+
+<mx:VDividedBox width="60%" height="100%">
+           <mx:Tree id="tree1" 
+            width="100%" height="35%"
+            labelField="@label" 
+            showRoot="true"
+			change="treeChanged(event)"
+			itemClick="itemClickHandler(event)"
+             >
+            <fx:XMLList>
+                <fx:menuitem label="CS229: Stanford University Machine Learning Course" topicIndex="1">
+                    <fx:menuitem label="Module 1: Introduction" topicIndex="1">
+					    <fx:menuitem label="Topic 1: Basic Concepts" topicIndex="1" />
+				     </fx:menuitem>
+          			<fx:menuitem label="Module 2: Supervised learning" topicIndex="2">
+                        <fx:menuitem label="Topic 2: Supervised learning setup" topicIndex="2"/>
+                        <fx:menuitem label="Topic 3: Logistic regression. Perceptron. Exponential family" topicIndex="3"/>
+                        <fx:menuitem label="Topic 4: Generative learning algorithms. Gaussian discriminant analysis. Naive Bayes" topicIndex="4"/>
+						<fx:menuitem label="Topic 5: Support vector machines" topicIndex="5"/>	
+						<fx:menuitem label="Topic 6: Model selection and feature selection" topicIndex="6"/>	
+						<fx:menuitem label="Topic 7: Ensemble methods: Bagging, boosting" topicIndex="7"/>	
+						<fx:menuitem label="Topic 8: Evaluating and debugging learning algorithms." topicIndex="8"/>	
+						
+				    </fx:menuitem>
+					<fx:menuitem label="Module 3: Learning theory" topicIndex="9">
+                        <fx:menuitem label="Topic 9: Bias/variance tradeoff. Union and Chernoff/Hoeffding bounds" topicIndex="9"/>
+                        <fx:menuitem label="Topic 10: VC dimension. Worst case (online) learning" topicIndex="10"/>
+                        <fx:menuitem label="Topic 11: Practical advice on how to use learning algorithms" topicIndex="11"/>
+				    </fx:menuitem>
+					<fx:menuitem label="Module 4: Unsupervised learning" topicIndex="12">
+                        <fx:menuitem label="Topic 12: Clustering. K-means" topicIndex="12"/>
+                        <fx:menuitem label="Topic 13: EM. Mixture of Gaussians" topicIndex="13"/>
+                        <fx:menuitem label="Topic 14: Factor analysis " topicIndex="14"/>
+						<fx:menuitem label="Topic 15: PCA (Principal components analysis)" topicIndex="15"/>	
+						<fx:menuitem label="Topic 16: ICA (Independent components analysis)" topicIndex="16"/>	
+				    </fx:menuitem>
+					<fx:menuitem label="Module 5: Reinforcement learning and control" topicIndex="17">
+						<fx:menuitem label="Topic 17: MDPs. Bellman equations" topicIndex="17"/>	
+						<fx:menuitem label="Topic 18:Value iteration and policy iteration" topicIndex="18"/>	
+						<fx:menuitem label="Topic 19: Linear quadratic regulation (LQR). LQG" topicIndex="19"/>	
+						<fx:menuitem label="Topic 20: Q-learning. Value function approximation,Policy search. Reinforce. POMDPs" topicIndex="20"/>	
+					</fx:menuitem>
+					 
+						
+                </fx:menuitem>
+            </fx:XMLList>
+        </mx:Tree>
+				
+            
+				<mx:SWFLoader id="swfLoader"
+				height="100%"
+				width="100%"
+				source="{videoUrl}"
+				bottom="1"
+				left="1"
+				right="1"
+				top="1"
+				autoLoad="true"
+				maintainAspectRatio="true"
+				scaleContent="true"/>
+        </mx:VDividedBox>
+
+</mx:HDividedBox>
+
+</s:Application>
